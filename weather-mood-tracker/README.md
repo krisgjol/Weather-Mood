@@ -68,3 +68,9 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+### ENV file
+
+Purpose: This file is used to store environment variables (in this case, the User-Agent required by the MET Weather API).
+
+Why Use It: By storing the User-Agent string here, you avoid hardcoding it in your components. This makes it easier to change in the future and helps keep sensitive information out of your codebase (e.g., API keys).
