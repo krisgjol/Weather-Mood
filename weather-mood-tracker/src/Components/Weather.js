@@ -1,7 +1,10 @@
 // src/components/Weather.js
 import React, { useState, useEffect } from "react";
-import { fetchWeather } from "../services/WeatherService";
+import { fetchWeather } from "../services/weatherService";
 import { getLocationName } from "../services/geocodeService";
+import MoodSlider from "./MoodSlider"; // Import MoodInput
+import { db } from "./firebaseConfig"; // Import Firestore instance
+import { collection, addDoc } from "firebase/firestore"; // Firestore methods
 
 const Weather = () => {
   // Stores the fetched weather data. Initially null because the data is not loaded until the API call completes.
@@ -12,6 +15,19 @@ const Weather = () => {
   // Stores any error message that occurs during the fetch process.
   const [error, setError] = useState(null);
   const [locationName, setLocationName] = useState("");
+  const [mood, setMood] = useState(3); // State for mood, default to 3 (neutral)
+
+  // Function to get emoji based on mood value
+  const getEmojiForMood = (mood) => {
+    switch (mood) {
+      case 1: return "😢"; // Sad
+      case 2: return "😟"; // Disappointed
+      case 3: return "😐"; // Neutral
+      case 4: return "😊"; // Happy
+      case 5: return "😁"; // Very Happy
+      default: return "😐"; // Neutral as default
+    }
+  };
 
   // What It Does: useEffect() is used to perform side effects in React, such as fetching data. 
   // In this case, we fetch the weather data when the component mounts (runs on first render).
@@ -22,7 +38,7 @@ const Weather = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
-            const lat = position.coords.latitude;
+            const lat = position.coords.latitude; 
             const lon = position.coords.longitude;
 
             try {
@@ -56,6 +72,34 @@ const Weather = () => {
     getLocationAndWeather();
   }, []);
 
+  // Store mood and weather data in Firebase
+  const storeMoodAndWeatherData = async (mood) => {
+    const moodValue = Number(mood); // Convert to number just in case
+
+    // Validate the mood value
+    if (isNaN(moodValue) || moodValue < 1 || moodValue > 5) {
+      console.error("Invalid mood value. Must be a number between 1 and 5.");
+      return;
+    }
+
+    const weatherInfo = {
+      location: locationName,
+      lat: weatherData.geometry?.coordinates[1],
+      lon: weatherData.geometry?.coordinates[0],
+      temperature: weatherData.properties.timeseries[0].data.instant.details.air_temperature,
+      humidity: weatherData.properties.timeseries[0].data.instant.details.relative_humidity,
+      mood: moodValue, 
+      timestamp: new Date(),
+    };
+
+    try {
+      await addDoc(collection(db, "moods"), weatherInfo); // Store in Firestore
+      console.log("Mood and weather data stored successfully!");
+    } catch (error) {
+      console.error("Error storing data:", error);
+    }
+  };
+
   // Loading Message: While the data is being fetched (loading is true), we display a "Loading weather data..." message.
   if (loading) {
     return <p>Loading weather data...</p>;
@@ -75,6 +119,14 @@ const Weather = () => {
       </h2>
       <p>Temperature: {weatherData.properties.timeseries[0].data.instant.details.air_temperature}°C</p>
       <p>Humidity: {weatherData.properties.timeseries[0].data.instant.details.relative_humidity}%</p>
+
+      {/* Add the MoodSlider component below the weather data */}
+      <MoodSlider mood={mood} setMood={setMood} /> {/* Update mood on slider change */}
+      
+      {/* Display the selected mood with emoji */}
+      <p>Your Mood: {mood} {getEmojiForMood(mood)}</p> {/* Display the current mood value with emoji */}
+      
+      <button onClick={() => storeMoodAndWeatherData(mood)}>Submit Mood</button> {/* Button to submit mood and weather data */}
     </div>
   ) : (
     <p>No weather data available</p>

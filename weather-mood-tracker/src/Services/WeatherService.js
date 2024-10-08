@@ -1,4 +1,4 @@
-// src/services/WeatherService.js
+// src/services/weatherService.js
 import axios from "axios";
 
 // Load the User-Agent from environment variables

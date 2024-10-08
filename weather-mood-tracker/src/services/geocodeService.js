@@ -23,9 +23,15 @@ export const getLocationName = async (lat, lon) => {
     });
     const results = response.data.results;
     if (results && results.length > 0) {
-      return results[0].formatted; // Return the formatted location name
+      const components = results[0].components;
+      
+      // Try to display city, town, or country (falling back to whichever is available)
+      const city = components.city || components.town || components.village;
+      const country = components.country;
+      
+      // Combine city and country for a less specific location
+      return city ? `${city}, ${country}` : country || "Unknown Location";
     } else {
-      console.warn("No results found for the location");
       return "Unknown Location";
     }
   } catch (error) {
