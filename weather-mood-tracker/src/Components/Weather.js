@@ -4,7 +4,9 @@ import { fetchWeather } from "../services/weatherService";
 import { getLocationName } from "../services/geocodeService";
 import MoodSlider from "./MoodSlider"; // Import MoodInput
 import { db } from "./firebaseConfig"; // Import Firestore instance
-import { collection, addDoc } from "firebase/firestore"; // Firestore methods
+import { collection, addDoc, query, where, getDocs, deleteDoc } from "firebase/firestore"; // Firestore methods 
+import { auth } from "./firebaseConfig"; // Import auth for signing out
+import { signOut } from "firebase/auth"; // Import signOut method
 
 const Weather = () => {
   // Stores the fetched weather data. Initially null because the data is not loaded until the API call completes.
@@ -16,18 +18,6 @@ const Weather = () => {
   const [error, setError] = useState(null);
   const [locationName, setLocationName] = useState("");
   const [mood, setMood] = useState(3); // State for mood, default to 3 (neutral)
-
-  // Function to get emoji based on mood value
-  const getEmojiForMood = (mood) => {
-    switch (mood) {
-      case 1: return "😢"; // Sad
-      case 2: return "😟"; // Disappointed
-      case 3: return "😐"; // Neutral
-      case 4: return "😊"; // Happy
-      case 5: return "😁"; // Very Happy
-      default: return "😐"; // Neutral as default
-    }
-  };
 
   // What It Does: useEffect() is used to perform side effects in React, such as fetching data. 
   // In this case, we fetch the weather data when the component mounts (runs on first render).
@@ -75,11 +65,25 @@ const Weather = () => {
   // Store mood and weather data in Firebase
   const storeMoodAndWeatherData = async (mood) => {
     const moodValue = Number(mood); // Convert to number just in case
-
     // Validate the mood value
     if (isNaN(moodValue) || moodValue < 1 || moodValue > 5) {
       console.error("Invalid mood value. Must be a number between 1 and 5.");
       return;
+    }
+
+    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+    const existingMoodQuery = query(
+      collection(db, "moods"),
+      where("timestamp", ">=", new Date(today)) // Check for entries today
+    );
+
+    const existingMoodDocs = await getDocs(existingMoodQuery);
+  
+    if (!existingMoodDocs.empty) {
+      // If an existing entry is found, delete it
+      existingMoodDocs.forEach(async (doc) => {
+        await deleteDoc(doc.ref); // Delete the existing document
+      });
     }
 
     const weatherInfo = {
@@ -97,6 +101,16 @@ const Weather = () => {
       console.log("Mood and weather data stored successfully!");
     } catch (error) {
       console.error("Error storing data:", error);
+    }
+  };
+
+  // Function to sign out
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth); // Sign out from Firebase
+      console.log("User signed out successfully");
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
   };
 
@@ -123,10 +137,11 @@ const Weather = () => {
       {/* Add the MoodSlider component below the weather data */}
       <MoodSlider mood={mood} setMood={setMood} /> {/* Update mood on slider change */}
       
-      {/* Display the selected mood with emoji */}
-      <p>Your Mood: {mood} {getEmojiForMood(mood)}</p> {/* Display the current mood value with emoji */}
-      
-      <button onClick={() => storeMoodAndWeatherData(mood)}>Submit Mood</button> {/* Button to submit mood and weather data */}
+      {/* Button to submit mood and weather data */}
+      <button onClick={() => storeMoodAndWeatherData(mood)}>Submit Mood</button>
+
+      {/* Sign Out Button */}
+      <button onClick={handleSignOut}>Sign Out</button> {/* Button to sign out */}
     </div>
   ) : (
     <p>No weather data available</p>
