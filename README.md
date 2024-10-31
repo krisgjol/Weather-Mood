@@ -36,9 +36,6 @@ Weather Mood Tracker is a React app that lets users track their daily mood along
   
 - **Mood-Weather Correlation**: 
   - Insights into how the weather might be affecting the user's mood, with visual graphs showing trends over time.
-  
-- **Notifications & Reminders**: 
-  - Push notifications to remind users to log their daily mood.
 
 - **Mobile Responsiveness**: 
   - Improve UI/UX for mobile devices to ensure a seamless experience across platforms.
@@ -87,8 +84,8 @@ Weather Mood Tracker is a React app that lets users track their daily mood along
 - **Frontend**: React
 - **Authentication**: Firebase Authentication (with Google sign-in)
 - **Database**: Firebase Firestore
-- **Weather API**: [Your Weather API Provider] (e.g., OpenWeatherMap, Met.no, etc.)
-- **Hosting**: Firebase Hosting (or another CI/CD service, depending on deployment)
+- **Weather API**: Met.no
+- **Hosting**: Firebase Hosting
 
 
 ## Future Ideas

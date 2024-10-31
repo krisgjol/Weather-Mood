@@ -8,7 +8,7 @@ import { collection, addDoc, query, where, getDocs, deleteDoc } from "firebase/f
 import { auth } from "./firebaseConfig"; // Import auth for signing out
 import { signOut } from "firebase/auth"; // Import signOut method
 
-const Weather = () => {
+const Weather = ({ user }) => {
   // Stores the fetched weather data. Initially null because the data is not loaded until the API call completes.
   const [weatherData, setWeatherData] = useState(null);
   // A boolean that indicates if the API call is still in progress. 
@@ -87,6 +87,7 @@ const Weather = () => {
     }
 
     const weatherInfo = {
+      userId: user.uid,
       location: locationName,
       lat: weatherData.geometry?.coordinates[1],
       lon: weatherData.geometry?.coordinates[0],
