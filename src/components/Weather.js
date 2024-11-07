@@ -6,6 +6,7 @@ import MoodSlider from "./MoodSlider"; // Import MoodInput
 import { db, auth } from "./firebaseConfig"; // Import Firestore instance
 import { collection, addDoc, query, where, getDocs, deleteDoc } from "firebase/firestore"; // Firestore methods 
 import { signOut } from "firebase/auth"; // Import signOut method
+import MonthlyEntriesChart from "./MonthlyEntriesChart";
 import MoodWeatherCorrelation from "./MoodWeatherCorrelation";
 
 const Weather = ({ user }) => {
@@ -144,7 +145,8 @@ const Weather = ({ user }) => {
       {/* Sign Out Button */}
       <button onClick={handleSignOut}>Sign Out</button> {/* Button to sign out */}
 
-      <MoodWeatherCorrelation />
+      <MonthlyEntriesChart user={user} />
+      <MoodWeatherCorrelation user={user} />
     </div>
   ) : (
     <p>No weather data available</p>
